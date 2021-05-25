@@ -20,11 +20,15 @@ import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
 @EnableWebSecurity
 public class SecurityConfig extends WebSecurityConfigurerAdapter {
 
-    @Autowired
-    @Qualifier("myUserDetailsService")
     private UserDetailsService userDetailsService;
-    @Autowired
     private LoginSuccessHandler loginSuccessHandler;
+
+    @Autowired
+    public SecurityConfig(@Qualifier("myUserDetailsService") UserDetailsService userDetailsService,
+                          LoginSuccessHandler loginSuccessHandler) {
+        this.userDetailsService = userDetailsService;
+        this.loginSuccessHandler = loginSuccessHandler;
+    }
 
     @Override
     public void configure(AuthenticationManagerBuilder auth) throws Exception {
@@ -35,20 +39,18 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
     protected void configure(HttpSecurity http) throws Exception {
 
         http  .formLogin()
-                .loginPage("/login")
                 .successHandler(loginSuccessHandler)
-                .loginProcessingUrl("/login")
-                .usernameParameter("j_username")
-                .passwordParameter("j_password")
+                .loginProcessingUrl("/")
                 .permitAll();
 
         http  .logout()
                 .permitAll()
                 .logoutRequestMatcher(new AntPathRequestMatcher("/logout"))
-                .logoutSuccessUrl("/login?logout");
+                .logoutSuccessUrl("/");
 
         http  .csrf().disable()
                 .authorizeRequests()
+                .antMatchers("/").permitAll()
                 .antMatchers("/login").anonymous()
                 .antMatchers("/user**").access("hasAnyAuthority('user','admin')")
                 .antMatchers("/admin**").access("hasAuthority('admin')")

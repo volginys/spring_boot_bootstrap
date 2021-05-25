@@ -13,8 +13,13 @@ import org.springframework.transaction.annotation.Transactional;
 @Service
 @Qualifier("myUserDetailsService")
 public class UserDetailsServiceImpl implements UserDetailsService {
-    @Autowired
+
     private UserRepository userRepository;
+
+    @Autowired
+    public UserDetailsServiceImpl(UserRepository userRepository) {
+        this.userRepository = userRepository;
+    }
 
     @SuppressWarnings("unchecked")
     @Transactional(readOnly = true)
